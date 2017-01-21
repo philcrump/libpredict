@@ -116,7 +116,7 @@ void sdp4_init(const predict_orbital_elements_t *tle, struct _sdp4 *m)
 	sdp4_deep_initialize(tle, m, &(m->deep_arg));
 }
 
-void sdp4_predict(const struct _sdp4 *m, double tsince, struct model_output *output)
+void sdp4_predict(const struct _sdp4 *m, predict_julian_date_t tsince, struct model_output *output)
 {
 
 	int i;

@@ -268,7 +268,7 @@ void Convert_Sat_State(double pos[3], double vel[3])
 	vec3_mul_scalar(vel, xkmper*xmnpda/secday, vel);
 }
 
-double Julian_Date_of_Year(double year)
+predict_julian_date_t Julian_Date_of_Year(double year)
 {
 	/* The function Julian_Date_of_Year calculates the Julian Date  */
 	/* of Day 0.0 of {year}. This function is used to calculate the */
@@ -293,7 +293,7 @@ double Julian_Date_of_Year(double year)
 	return jdoy;
 }
 
-double Julian_Date_of_Epoch(double epoch)
+predict_julian_date_t Julian_Date_of_Epoch(double satellite_epoch)
 { 
 	/* The function Julian_Date_of_Epoch returns the Julian Date of     */
 	/* an epoch specified in the format used in the NORAD two-line      */
@@ -307,7 +307,7 @@ double Julian_Date_of_Epoch(double epoch)
 	/* Modification to support Y2K */
 	/* Valid 1957 through 2056     */
 
-	day=modf(epoch*1E-3, &year)*1E3;
+	day=modf(satellite_epoch*1E-3, &year)*1E3;
 
 	if (year<57)
 		year=year+2000;
@@ -415,7 +415,7 @@ double ThetaG_JD(double jd)
 
 
 
-void Calculate_User_PosVel(double time, geodetic_t *geodetic, double obs_pos[3], double obs_vel[3])
+void Calculate_User_PosVel(predict_julian_date_t time, geodetic_t *geodetic, double obs_pos[3], double obs_vel[3])
 {
 	/* Calculate_User_PosVel() passes the user's geodetic position
 	   and the time of interest and returns the ECI position and
@@ -461,7 +461,7 @@ long DayNum(int m, int d, int y)
 }
 
 
-void Calculate_LatLonAlt(double time, const double pos[3],  geodetic_t *geodetic)
+void Calculate_LatLonAlt(predict_julian_date_t time, const double pos[3],  geodetic_t *geodetic)
 {
 	/* Procedure Calculate_LatLonAlt will calculate the geodetic  */
 	/* position of an object given its ECI position pos and time. */
@@ -472,9 +472,6 @@ void Calculate_LatLonAlt(double time, const double pos[3],  geodetic_t *geodetic
 	/* Reference:  The 1992 Astronomical Almanac, page K12. */
 
 	double r, e2, phi, c;
-	
-	//Convert to julian time:
-	time += 2444238.5;
 
 	geodetic->theta = AcTan(pos[1], pos[0]); /* radians */
 	geodetic->lon = FMod2p(geodetic->theta-ThetaG_JD(time)); /* radians */
@@ -496,7 +493,7 @@ void Calculate_LatLonAlt(double time, const double pos[3],  geodetic_t *geodetic
 		geodetic->lat-= 2*M_PI;
 }
 
-void Calculate_Obs(double time, const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set)
+void Calculate_Obs(predict_julian_date_t time, const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set)
 {
 	/* The procedures Calculate_Obs and Calculate_RADec calculate         */
 	/* the *topocentric* coordinates of the object with ECI position,     */
@@ -558,7 +555,7 @@ void Calculate_Obs(double time, const double pos[3], const double vel[3], geodet
 		obs_set->y=el;  /* Reset to true elevation */
 }
 
-void Calculate_RADec(double time, const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set)
+void Calculate_RADec(predict_julian_date_t time, const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set)
 {
 	/* Reference:  Methods of Orbit Determination by  */
 	/*             Pedro Ramon Escobal, pp. 401-402   */

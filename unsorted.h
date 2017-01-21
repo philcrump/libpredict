@@ -1,7 +1,7 @@
 #ifndef UNSORTED_H_
 #define UNSORTED_H_
 
-#include <predict/predict.h>
+#include "predict.h"
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -316,7 +316,7 @@ long DayNum(int month, int day, int year);
  *
  * \copyright GPLv2+
  **/
-void Calculate_LatLonAlt(double time, const double pos[3], geodetic_t *geodetic);
+void Calculate_LatLonAlt(predict_julian_date_t time, const double pos[3], geodetic_t *geodetic);
 
 	
 /**
@@ -337,14 +337,14 @@ void Calculate_LatLonAlt(double time, const double pos[3], geodetic_t *geodetic)
  *
  * \copyright GPLv2+
  **/
-void Calculate_Obs(double time,  const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set);
+void Calculate_Obs(predict_julian_date_t time,  const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set);
 
 /**
  * Reference:  Methods of Orbit Determination by Pedro Ramon Escobal, pp. 401-402
  *
  * \copyright GPLv2+
  **/
-void Calculate_RADec(double time, const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set);
+void Calculate_RADec(predict_julian_date_t time, const double pos[3], const double vel[3], geodetic_t *geodetic, vector_t *obs_set);
 
 /**
  * This function is used in the FindMoon() function.
@@ -357,7 +357,7 @@ double PrimeAngle(double x);
  *
  * \copyright GPLv2+
  **/
-void Calculate_User_PosVel(double time, geodetic_t *geodetic, double obs_pos[3], double obs_vel[3]);
+void Calculate_User_PosVel(predict_julian_date_t time, geodetic_t *geodetic, double obs_pos[3], double obs_vel[3]);
 
 
 #endif

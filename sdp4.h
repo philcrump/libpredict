@@ -1,7 +1,7 @@
 #ifndef _SDP4_H_
 #define _SDP4_H_
 
-#include <predict/predict.h>
+#include "predict.h"
 
 struct model_output {
 	double xinck; //inclination?

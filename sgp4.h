@@ -1,7 +1,7 @@
 #ifndef SGP4_H_
 #define SGP4_H_
 
-#include <predict/predict.h>
+#include "predict.h"
 #include "sdp4.h"
 
 /**

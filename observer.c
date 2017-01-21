@@ -1,11 +1,11 @@
-#include <predict/predict.h>
+#include "predict.h"
 #include "unsorted.h"
 #include <stdlib.h>
 #include <string.h>
 #include "defs.h"
 #include "sun.h"
 
-void observer_calculate(const predict_observer_t *observer, double time, const double pos[3], const double vel[3], struct predict_observation *result);
+void observer_calculate(const predict_observer_t *observer, predict_julian_date_t time, const double pos[3], const double vel[3], struct predict_observation *result);
 
 predict_observer_t *predict_create_observer(const char *name, double lat, double lon, double alt)
 {
@@ -41,10 +41,8 @@ void predict_destroy_observer(predict_observer_t *obs)
 void predict_observe_orbit(const predict_observer_t *observer, const struct predict_orbit *orbit, struct predict_observation *obs)
 {
 	if (obs == NULL) return;
-	
-	double julTime = orbit->time + 2444238.5;
 
-	observer_calculate(observer, julTime, orbit->position, orbit->velocity, obs);
+	observer_calculate(observer, orbit->time, orbit->position, orbit->velocity, obs);
 
 	// Calculate visibility status of the orbit: Orbit is visible if sun elevation is low enough and the orbit is above the horizon, but still in sunlight.
 	obs->visible = false;
@@ -55,7 +53,7 @@ void predict_observe_orbit(const predict_observer_t *observer, const struct pred
 	}
 }
 
-void observer_calculate(const predict_observer_t *observer, double time, const double pos[3], const double vel[3], struct predict_observation *result)
+void observer_calculate(const predict_observer_t *observer, predict_julian_date_t time, const double pos[3], const double vel[3], struct predict_observation *result)
 {
 	
 		/* The procedures Calculate_Obs and Calculate_RADec calculate         */
@@ -145,7 +143,7 @@ void observer_calculate(const predict_observer_t *observer, double time, const d
 
 }
 
-void predict_observe_sun(const predict_observer_t *observer, double time, struct predict_observation *obs)
+void predict_observe_sun(const predict_observer_t *observer, predict_julian_date_t time, struct predict_observation *obs)
 {
 	
 	// Find sun position
@@ -170,8 +168,7 @@ void predict_observe_sun(const predict_observer_t *observer, double time, struct
 	geodetic.alt = observer->altitude / 1000.0;
 	geodetic.theta = 0.0;
 	
-	double jul_utc = time + 2444238.5;
-	Calculate_Obs(jul_utc, solar_vector, zero_vector, &geodetic, &solar_set);
+	Calculate_Obs(time, solar_vector, zero_vector, &geodetic, &solar_set);
 	
 	double sun_azi = solar_set.x; 
 	double sun_ele = solar_set.y;
@@ -179,14 +176,14 @@ void predict_observe_sun(const predict_observer_t *observer, double time, struct
 	double sun_range = 1.0+((solar_set.z-AU)/AU);
 	double sun_range_rate = 1000.0*solar_set.w;
 
-	Calculate_LatLonAlt(jul_utc, solar_vector, &solar_latlonalt);
+	Calculate_LatLonAlt(time, solar_vector, &solar_latlonalt);
 
 	/*
 	double sun_lat = Degrees(solar_latlonalt.lat);
 	double sun_lon = 360.0-Degrees(solar_latlonalt.lon);
 	*/
 
-	Calculate_RADec(jul_utc, solar_vector, zero_vector, &geodetic, &solar_rad);
+	Calculate_RADec(time, solar_vector, zero_vector, &geodetic, &solar_rad);
 
 	/*
 	double sun_ra = solar_rad.x ;
@@ -206,14 +203,14 @@ void predict_observe_sun(const predict_observer_t *observer, double time, struct
 	   from a Javascript implementation of the Meeus method for
 	   determining the exact position of the Moon found at:
 	   http://www.geocities.com/s_perona/ingles/poslun.htm. */
-void predict_observe_moon(const predict_observer_t *observer, double time, struct predict_observation *obs)
+void predict_observe_moon(const predict_observer_t *observer, predict_julian_date_t time, struct predict_observation *obs)
 {
 	
 	double	jd, ss, t, t1, t2, t3, d, ff, l1, m, m1, ex, om, l,
 		b, w1, w2, bt, p, lm, h, ra, dec, z, ob, n, e, el,
 		az, teg, th, mm, dv;
 
-	jd = time + 2444238.5;
+	jd = time;
 
 	t=(jd-2415020.0)/36525.0;
 	t2=t*t;
@@ -395,12 +392,12 @@ void predict_observe_moon(const predict_observer_t *observer, double time, struc
 
 #define ELEVATION_ZERO_TOLERANCE 0.3 //threshold for fine-tuning of AOS/LOS
 #define DAYNUM_MINUTE 1.0/(24*60) //number of days corresponding to a minute
-double predict_next_aos(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, double start_utc)
+predict_julian_date_t predict_next_aos(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time)
 {
-	double ret_aos_time = 0;
-	double curr_time = start_utc;
 	struct predict_observation obs;
-	double time_step = 0;
+	predict_julian_date_t ret_aos_time = 0;
+	predict_julian_date_t curr_time = start_time;
+	predict_julian_date_t time_step = 0;
 	
 	struct predict_orbit orbit;
 	predict_orbit(orbital_elements, &orbit, curr_time);
@@ -449,12 +446,12 @@ double predict_next_aos(const predict_observer_t *observer, const predict_orbita
 	return ret_aos_time;
 }
 
-double predict_next_los(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, double start_utc)
+predict_julian_date_t predict_next_los(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time)
 {
-	double ret_los_time = 0;
-	double curr_time = start_utc;
 	struct predict_observation obs;
-	double time_step = 0;
+	predict_julian_date_t ret_los_time = 0;
+	predict_julian_date_t curr_time = start_time;
+	predict_julian_date_t time_step = 0;
 
 	struct predict_orbit orbit;
 	predict_orbit(orbital_elements, &orbit, curr_time);
@@ -502,6 +499,5 @@ double predict_doppler_shift(const predict_observer_t *observer, const struct pr
 	struct predict_observation obs;
 	predict_observe_orbit(observer, orbit, &obs);
 
-	double sat_range_rate = obs.range_rate*1000.0; //convert to m/s
-	return frequency*sat_range_rate/SPEED_OF_LIGHT; //assumes that sat_range <<<<< speed of light, which is very ok
+	return frequency * ((obs.range_rate * 1000.0) / SPEED_OF_LIGHT); //assumes that sat_range <<<<< speed of light, which is very ok
 }

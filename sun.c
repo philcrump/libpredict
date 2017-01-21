@@ -2,9 +2,9 @@
 #include "unsorted.h"
 #include "defs.h"
 
-void sun_predict(double time, double position[3])
+void sun_predict(predict_julian_date_t time, double position[3])
 {
-	double jul_utc = time + 2444238.5;
+	double jul_utc = time;
 	double mjd = jul_utc - 2415020.0;
 	double year = 1900 + mjd / 365.25;
 	double T = (mjd + Delta_ET(year) / secday) / 36525.0;

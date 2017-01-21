@@ -1,4 +1,3 @@
-#define _XOPEN_SOURCE 600
 #include <math.h>
 #include <string.h>
 #include "defs.h"
@@ -155,22 +154,18 @@ bool predict_aos_happens(const predict_orbital_elements_t *m, double latitude)
 
 /* This is the stuff we need to do repetitively while tracking. */
 /* This is the old Calc() function. */
-int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct predict_orbit *m, double utc)
+int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct predict_orbit *m, predict_julian_date_t julTime)
 {
-	/* Set time to now if now time is provided: */
-	if (utc == 0) utc = predict_to_julian(time(NULL));
-	
 	/* Satellite position and velocity vectors */
 	vec3_set(m->position, 0, 0, 0);
 	vec3_set(m->velocity, 0, 0, 0);
 
-	m->time = utc;
-	double julTime = utc + 2444238.5;
+	m->time = julTime;
 
 	/* Convert satellite's epoch time to Julian  */
 	/* and calculate time since epoch in minutes */
 	double epoch = 1000.0*orbital_elements->epoch_year + orbital_elements->epoch_day;
-	double jul_epoch = Julian_Date_of_Epoch(epoch);
+	predict_julian_date_t jul_epoch = Julian_Date_of_Epoch(epoch);
 	double tsince = (julTime - jul_epoch)*xmnpda;
 
 	/* Call NORAD routines according to deep-space flag. */
@@ -202,7 +197,7 @@ int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct pre
 
 	/* Calculate satellite Lat North, Lon East and Alt. */
 	geodetic_t sat_geodetic;
-	Calculate_LatLonAlt(utc, m->position, &sat_geodetic);
+	Calculate_LatLonAlt(m->time, m->position, &sat_geodetic);
 
 	m->latitude = sat_geodetic.lat;
 	m->longitude = sat_geodetic.lon;
@@ -226,7 +221,7 @@ int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct pre
 	m->revolutions = (long)floor((xno*xmnpda/(M_PI*2.0) + age*orbital_elements->bstar_drag_term)*age + xmo/(2.0*M_PI)) + orbital_elements->revolutions_at_epoch;
 
 	//calculate whether orbit is decayed
-	m->decayed = predict_decayed(orbital_elements, utc);
+	m->decayed = predict_decayed(orbital_elements, julTime);
 
 	return 0;
 }
