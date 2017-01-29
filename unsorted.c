@@ -314,7 +314,7 @@ predict_julian_date_t Julian_Date_of_Epoch(double satellite_epoch)
 	else
 		year=year+1900;
 
-	return (Julian_Date_of_Year(year)+day);
+	return (predict_julian_date_t)(Julian_Date_of_Year(year)+day);
 }
 
 int DOY (int yr, int mo, int dy)
@@ -428,8 +428,8 @@ void Calculate_User_PosVel(predict_julian_date_t time, geodetic_t *geodetic, dou
 	double c, sq, achcp;
 
 	geodetic->theta=FMod2p(ThetaG_JD(time)+geodetic->lon); /* LMST */
-	c=1/sqrt(1+f*(f-2)*Sqr(sin(geodetic->lat)));
-	sq=Sqr(1-f)*c;
+	c=1/sqrt(1+LIBPREDICT_F*(LIBPREDICT_F-2)*Sqr(sin(geodetic->lat)));
+	sq=Sqr(1-LIBPREDICT_F)*c;
 	achcp=(xkmper*c+geodetic->alt)*cos(geodetic->lat);
 	obs_pos[0] = (achcp*cos(geodetic->theta)); /* kilometers */
 	obs_pos[1] = (achcp*sin(geodetic->theta));
@@ -476,7 +476,7 @@ void Calculate_LatLonAlt(predict_julian_date_t time, const double pos[3],  geode
 	geodetic->theta = AcTan(pos[1], pos[0]); /* radians */
 	geodetic->lon = FMod2p(geodetic->theta-ThetaG_JD(time)); /* radians */
 	r = sqrt(Sqr(pos[0])+Sqr(pos[1]));
-	e2 = f*(2-f);
+	e2 = LIBPREDICT_F*(2-LIBPREDICT_F);
 	geodetic->lat=AcTan(pos[2],r); /* radians */
 
 	do
@@ -603,7 +603,7 @@ char temp[512];
 char *SubString(const char *string, int start, int end)
 {
 
-	unsigned x, y;
+	int x, y;
 
 	if (end>=start)
 	{

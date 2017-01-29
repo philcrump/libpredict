@@ -66,7 +66,7 @@ void sdp4_init(const predict_orbital_elements_t *tle, struct _sdp4 *m)
 	/* For perigee below 156 km, the values */
 	/* of s and qoms2t are altered.         */
 
-	s4=s;
+	s4 = LIBPREDICT_S;
 	qoms24=qoms2t;
 	perigee=(m->deep_arg.aodp*(1-m->eo)-ae)*xkmper;
 
@@ -305,6 +305,7 @@ double ThetaG(double epoch, deep_arg_fixed_t *deep_arg)
 
 void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct _sdp4 *m, deep_arg_fixed_t *deep_arg)
 {
+	(void) tle;
 	double a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, ainv2, aqnv,
 	sgh, sini2, sh, si, day, bfact, c,
 	cc, cosq, ctem, f322, zx, zy, eoc, eq,

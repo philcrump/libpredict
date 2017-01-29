@@ -53,7 +53,7 @@ void sgp4_init(const predict_orbital_elements_t *orbital_elements, struct _sgp4 
 	/* For perigees below 156 km, the      */
 	/* values of s and qoms2t are altered. */
 
-	s4=s;
+	s4 = LIBPREDICT_S;
 	qoms24=qoms2t;
 	perigee=(m->aodp*(1-m->eo)-ae)*xkmper;
 
