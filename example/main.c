@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include "../predict.h"
 
@@ -25,9 +26,14 @@ int main(int argc, char **argv)
     struct predict_observation moon_observation;
 
     /* Up to date as of 21st Jan 2016, get new version from: https://hamtv.batc.tv/tle/ */
-	char *tle[2] = {
-		"1 25544U 98067A   17021.88686477  .00004204  00000-0  70740-4 0  9997",
-		"2 25544  51.6453  47.6425 0007617 108.4001 300.2548 15.54116805 39009"};
+    char tle_lines[2][150];
+	char *tle[2];
+	
+	tle[0] = &tle_lines[0][0];
+	tle[1] = &tle_lines[1][0];
+
+    strcpy(tle_lines[0], "1 25544U 98067A   17021.88686477  .00004204  00000-0  70740-4 0  9997");
+    strcpy(tle_lines[1], "2 25544  51.6453  47.6425 0007617 108.4001 300.2548 15.54116805 39009");
 
     predict_julian_date_t curr_time = julian_from_timestamp_ms(timestamp_ms());
 
