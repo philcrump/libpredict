@@ -1,0 +1,11 @@
+## Travis CI Configuration file
+
+# Use barebones Travis image
+language: c
+
+# Only grab latest git commit (no need for history)
+git:
+  depth: 1
+
+# Command to run tests
+script: cd example/ && make
