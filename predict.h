@@ -10,26 +10,14 @@
  **/
 typedef double predict_julian_date_t;
 
-/**
- * Convert time_t in UTC to Julian date in UTC.
- *
- * \param time Time in UTC
- * \return Julian day in UTC
- **/
-//predict_julian_date_t predict_to_julian(time_t time);
 
-/**
- * Convert Julian date in UTC back to a time_t in UTC. 
- *
- * \param date Julian date in UTC
- * \return Time in UTC
- **/
-//time_t predict_from_julian(predict_julian_date_t date);
+predict_julian_date_t julian_from_timestamp(uint64_t time);
 
-predict_julian_date_t julian_from_timestamp(uint64_t timestamp);
-predict_julian_date_t julian_from_timestamp_ms(uint64_t timestamp_ms);
+predict_julian_date_t julian_from_timestamp_ms(uint64_t time_ms);
+
 
 uint64_t timestamp_from_julian(predict_julian_date_t date);
+
 uint64_t timestamp_ms_from_julian(predict_julian_date_t date);
 
 /**
@@ -86,11 +74,12 @@ typedef struct {
 /**
  * Create predict_orbital_elements_t from TLE strings.
  *
- * \param tle NORAD two-line element set strings
+ * \param tle_line_1 First line of NORAD two-line element set string
+ * \param tle_line_2 Second line of NORAD two-line element set string
  * \return Processed TLE parameters
  * \copyright GPLv2+
  **/
-predict_orbital_elements_t* predict_parse_tle(char *tle[2]);
+bool predict_parse_tle(predict_orbital_elements_t *m, const char *tle_line_1, const char *tle_line_2);
 
 /**
  * Free memory allocated in orbital elements structure.
@@ -98,11 +87,10 @@ predict_orbital_elements_t* predict_parse_tle(char *tle[2]);
  **/
 void predict_destroy_orbital_elements(predict_orbital_elements_t *orbital_elements);
 
-
 /**
  * Predicted orbital values for satellite at a given time.
  **/
-struct predict_orbit {
+struct predict_position {
 	///Timestamp for last call to orbit_predict
 	predict_julian_date_t time;
 
@@ -147,15 +135,28 @@ struct predict_orbit {
  * \return 0 if everything went fine
  * \copyright GPLv2+
  **/
-int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct predict_orbit *m, predict_julian_date_t julTime);
+int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct predict_position *x, predict_julian_date_t time);
+
 /**
- * Find whether orbit is geostationary. 
+ * Find whether an orbit is geosynchronous.
  *
- * \param x Orbital elements
- * \return true if orbit is geostationary, otherwise false
- * \copyright GPLv2+
+ * This function uses the definition of geosynchronous orbits found in
+ * "Classification of geosynchronous objects", Issue 17, 28 March 2015, from the
+ * European Space Agency:
+ *
+ * - Eccentricity smaller than 0.2
+ * - Mean motion between 0.9 and 1.1
+ * - Inclination lower than 70 degrees
+ *
+ * The function is mainly used internally for avoiding long iteration loops in
+ * functions like predict_at_max_elevation() and predict_next_aos(). The wider
+ * definition of a geosynchronous orbits is appropriate here. The definition of
+ * a geostationary satellite would be stricter, but is not considered here.
+ *
+ * \param orbital_elements Orbital elements
+ * \return true if orbit is geosynchronous, false otherwise
  **/
-bool predict_is_geostationary(const predict_orbital_elements_t *x);
+bool predict_is_geosynchronous(const predict_orbital_elements_t *orbital_elements);
 
 /** 
  * Get apogee of satellite orbit. 
@@ -236,14 +237,7 @@ struct predict_observation {
  * \param alt Altitude in meters
  * \return Allocated observation point
  **/
-predict_observer_t *predict_create_observer(const char *name, double lat, double lon, double alt);
-
-/** 
- * Free observer.
- *
- * \param obs Observer to be freed.
- **/
-void predict_destroy_observer(predict_observer_t *obs);
+void predict_create_observer(predict_observer_t *obs, const char *name, double lat, double lon, double alt);
 
 /** 
  * Find relative position of satellite with respect to an observer. Calculates range, azimuth, elevation and relative velocity.
@@ -253,7 +247,7 @@ void predict_destroy_observer(predict_observer_t *obs);
  * \param obs Return of object for position of the satellite relative to the observer.
  * \copyright GPLv2+
  **/
-void predict_observe_orbit(const predict_observer_t *observer, const struct predict_orbit *orbit, struct predict_observation *obs);
+void predict_observe_orbit(const predict_observer_t *observer, const struct predict_position *orbit, struct predict_observation *obs);
 
 /**
  * Estimate relative position of the moon.
@@ -265,7 +259,32 @@ void predict_observe_orbit(const predict_observer_t *observer, const struct pred
  **/
 void predict_observe_moon(const predict_observer_t *observer, predict_julian_date_t time, struct predict_observation *obs);
 
-/** 
+/**
+ * Calculate right ascension of the moon.
+ *
+ * \param time Time
+ * \return RA in radians
+ **/
+double predict_moon_ra(predict_julian_date_t time);
+
+/**
+ * Calculate declination of the moon.
+ *
+ * \param time Time
+ * \return Declination in radians
+ **/
+double predict_moon_declination(predict_julian_date_t time);
+
+/**
+ * Calculate the greenwich hour angle (longitude) of the moon.
+ *
+ * \param time Time
+ * \return GHA in radians
+ * \copyright GPLv2+
+ **/
+double predict_moon_gha(predict_julian_date_t time);
+
+/**
  * Estimate relative position of the sun.
  *
  * \param observer Point of observation
@@ -275,16 +294,43 @@ void predict_observe_moon(const predict_observer_t *observer, predict_julian_dat
  **/
 void predict_observe_sun(const predict_observer_t *observer, predict_julian_date_t time, struct predict_observation *obs);
 
+/**
+ * Calculate right ascension of the sun.
+ *
+ * \param observer Point of observation
+ * \param time Time of observation
+ * \return RA in radians
+ **/
+double predict_sun_ra(predict_julian_date_t time);
+
+/**
+ * Calculate declination of the sun.
+ *
+ * \param observer Point of observation
+ * \param time Time of observation
+ * \return Declination in radians
+ **/
+double predict_sun_declination(predict_julian_date_t time);
+
+/**
+ * Calculate the greenwich hour angle (longitude) of the sun.
+ *
+ * \param time Time
+ * \return GHA in radians
+ * \copyright GPLv2+
+ **/
+double predict_sun_gha(predict_julian_date_t time);
+
 /** 
  * Find next acquisition of signal (AOS) of satellite (when the satellite rises above the horizon). Ignores previous AOS of current pass if the satellite is in range at the start time. 
  *
  * \param observer Point of observation
  * \param orbital_elements Orbital elements
  * \param start_time Start time for AOS search
- * \return Time of AOS
+ * \return Observation of the AOS
  * \copyright GPLv2+
  **/
-predict_julian_date_t predict_next_aos(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time);
+struct predict_observation predict_next_aos(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time);
 
 /** 
  * Find next loss of signal (LOS) of satellite (when the satellite goes below the horizon). Finds LOS of the current pass if the satellite currently is in range, finds LOS of next pass if not.
@@ -292,21 +338,30 @@ predict_julian_date_t predict_next_aos(const predict_observer_t *observer, const
  * \param observer Point of observation
  * \param orbital_elements Orbital elements
  * \param start_time Start time for LOS search
- * \return Time of LOS
+ * \return Observation of the LOS
  * \copyright GPLv2+
  **/
-predict_julian_date_t predict_next_los(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time);
+struct predict_observation predict_next_los(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time);
 
 /**
- * Calculate doppler shift of a given downlink frequency with respect to the observer. 
+ * Find maximum elevation of next or current pass.
  *
- * \param observer Point of observation
- * \param orbit Current state of satellite orbit
+ * \param observer Ground station
+ * \param orbital_elements Orbital elements of satellite
+ * \param start_time Search time. If elevation is negative, max elevation is sought from the start_time and on. If elevation is positive, max elevation is searched for within the current pass
+ * \return Observed properties at maximum elevation
+ **/
+struct predict_observation predict_at_max_elevation(const predict_observer_t *observer, const predict_orbital_elements_t *orbital_elements, predict_julian_date_t start_time);
+
+/**
+ * Calculate doppler shift of a given downlink frequency with respect to an observer.
+ *
+ * \param observation Observation of a satellite orbit
  * \param downlink_frequency Downlink frequency of the satellite
  * \return The frequency difference from the original frequency
  * \copyright GPLv2+
  **/
-double predict_doppler_shift(const predict_observer_t *observer, const struct predict_orbit *orbit, double downlink_frequency);
+double predict_doppler_shift(const struct predict_observation *observation, double downlink_frequency);
 
 /**
  * Calculate squint angle for satellite, i.e. angle between the satellite antenna and the QTH antenna.
@@ -318,7 +373,7 @@ double predict_doppler_shift(const predict_observer_t *observer, const struct pr
  * \return Squint angle in radians. Will output nan if the satellite is not an SDP4 satellite
  * \copyright GPLv2+
  **/
-double predict_squint_angle(const predict_observer_t *observer, const struct predict_orbit *orbit, double alon, double alat);
+double predict_squint_angle(const predict_observer_t *observer, const struct predict_position *orbit, double alon, double alat);
 
 /*!
  * \brief Calculate refraction angle.
