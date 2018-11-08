@@ -16,4 +16,6 @@ addons:
       - gcc-7
 
 # Command to run tests
-script: cd example/ && make
+script:
+  - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
+  - cd example/ && make
