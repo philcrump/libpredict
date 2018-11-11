@@ -96,9 +96,9 @@ int main(void)
 
   printf("== Spacecraft ==\n");
 
-  /* Up to date as of 7th November 2018, get new version from: https://live.ariss.org/tle/ */
-  strcpy(tle_lines[0], "1 25544U 98067A   18311.69881946  .00003236  00000-0  56524-4 0  9995");
-  strcpy(tle_lines[1], "2 25544  51.6417  23.5568 0004767  22.5396  79.5368 15.53922927140835");
+  /* Up to date as of 11th November 2018, get new version from: https://live.ariss.org/tle/ */
+  strcpy(tle_lines[0], "1 25544U 98067A   18315.44449074  .00003271  00000-0  56997-4 0  9997");
+  strcpy(tle_lines[1], "2 25544  51.6420   4.8937 0005168  36.0917 153.8179 15.53950133141417");
 
   printf("Parsing ISS TLE..         ");
   if(!predict_parse_tle(&iss_tle, tle[0], tle[1], &sgp, &sdp))
