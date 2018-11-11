@@ -18,6 +18,7 @@
 
 #define OBSERVER_LATITUDE         50.9
 #define OBSERVER_LONGITUDE        -1.39
+#define OBSERVER_ALTITUDE         0
 
 #define RADIANS_FROM_DEGREES(x)   (x*(M_PI/180.0))
 #define DEGREES_FROM_RADIANS(x)   (x*(180.0/M_PI))
@@ -77,8 +78,8 @@ int main(void)
   timestamp_ms_toString(current_timestamp, sizeof(current_timestamp), timestamp_ms_from_julian(curr_time));
   printf("Time:                     %s\n", current_timestamp);
 
-  predict_create_observer(&obs, "Self", RADIANS_FROM_DEGREES(OBSERVER_LATITUDE), RADIANS_FROM_DEGREES(OBSERVER_LONGITUDE), 0);
-  printf("Observer Position:        %+.4f°N, %+.4f°E\n", OBSERVER_LATITUDE, OBSERVER_LONGITUDE);
+  predict_create_observer(&obs, "Self", RADIANS_FROM_DEGREES(OBSERVER_LATITUDE), RADIANS_FROM_DEGREES(OBSERVER_LONGITUDE), OBSERVER_ALTITUDE);
+  printf("Observer Position:        %+.4f°N, %+.4f°E, %+dm\n", OBSERVER_LATITUDE, OBSERVER_LONGITUDE, OBSERVER_ALTITUDE);
 
   printf("== Planetary Bodies ==\n");
 
