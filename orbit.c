@@ -65,7 +65,7 @@ static bool checksum_tle(const char *tle_0, const char *tle_1)
   return true;
 }
 
-bool predict_parse_tle(predict_orbital_elements_t *m, const char *tle_line_1, const char *tle_line_2)
+bool predict_parse_tle(predict_orbital_elements_t *m, const char *tle_line_1, const char *tle_line_2, struct predict_sgp4 *sgp4, struct predict_sdp4 *sdp4)
 {
 	if (m == NULL) return false;
 
@@ -113,39 +113,27 @@ bool predict_parse_tle(predict_orbital_elements_t *m, const char *tle_line_1, co
 	/* Select a deep-space/near-earth ephemeris */
 	if (TWO_PI/xnodp/MINUTES_PER_DAY >= 0.15625) {
 		m->ephemeris = EPHEMERIS_SDP4;
-		
-		// Allocate memory for ephemeris data
-		m->ephemeris_data = malloc(sizeof(struct _sdp4));
 
-		if (m->ephemeris_data == NULL) {
-			predict_destroy_orbital_elements(m);
+		if (sdp4 == NULL) {
 			return false;
 		}
+		
 		// Initialize ephemeris data structure
-		sdp4_init(m, (struct _sdp4*)m->ephemeris_data);
+		m->ephemeris_data = sdp4;
+		sdp4_init(m, (struct predict_sdp4*)m->ephemeris_data);
 
 	} else {
 		m->ephemeris = EPHEMERIS_SGP4;
-		
-		// Allocate memory for ephemeris data
-		m->ephemeris_data = malloc(sizeof(struct _sgp4));
 
-		if (m->ephemeris_data == NULL) {
-			predict_destroy_orbital_elements(m);
+		if (sgp4 == NULL) {
 			return false;
 		}
 		// Initialize ephemeris data structure
-		sgp4_init(m, (struct _sgp4*)m->ephemeris_data);
+		m->ephemeris_data = sgp4;
+		sgp4_init(m, (struct predict_sgp4*)m->ephemeris_data);
 	}
 
 	return true;
-}
-
-void predict_destroy_orbital_elements(predict_orbital_elements_t *m)
-{
-	if (m->ephemeris_data != NULL) {
-		free(m->ephemeris_data);
-	}
 }
 
 bool predict_is_geosynchronous(const predict_orbital_elements_t *m)
@@ -224,10 +212,10 @@ int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct pre
 	struct model_output output;
 	switch (orbital_elements->ephemeris) {
 		case EPHEMERIS_SDP4:
-			sdp4_predict((struct _sdp4*)orbital_elements->ephemeris_data, tsince, &output);
+			sdp4_predict((struct predict_sdp4*)orbital_elements->ephemeris_data, tsince, &output);
 			break;
 		case EPHEMERIS_SGP4:
-			sgp4_predict((struct _sgp4*)orbital_elements->ephemeris_data, tsince, &output);
+			sgp4_predict((struct predict_sgp4*)orbital_elements->ephemeris_data, tsince, &output);
 			break;
 		default:
 			//Panic!
@@ -278,13 +266,58 @@ int predict_orbit(const predict_orbital_elements_t *orbital_elements, struct pre
 	return 0;
 }
 
+time_t mktime_utc(const struct tm* timeinfo_utc)
+{
+	time_t curr_time = time(NULL);
+	int timezone_diff = 0; //deviation of the current timezone from UTC in seconds
+
+	//get UTC time, interpret resulting tm as a localtime
+	struct tm timeinfo_gmt;
+	gmtime_r(&curr_time, &timeinfo_gmt);
+	time_t time_gmt = mktime(&timeinfo_gmt);
+
+	//get localtime, interpret resulting tm as localtime
+	struct tm timeinfo_local;
+	localtime_r(&curr_time, &timeinfo_local);
+	time_t time_local = mktime(&timeinfo_local);
+
+	//find the time difference between the two interpretations
+	timezone_diff += difftime(time_local, time_gmt);
+
+	//hack for preventing mktime from assuming localtime: add timezone difference to the input struct.
+	struct tm ret_timeinfo;
+	ret_timeinfo.tm_sec = timeinfo_utc->tm_sec + timezone_diff;
+	ret_timeinfo.tm_min = timeinfo_utc->tm_min;
+	ret_timeinfo.tm_hour = timeinfo_utc->tm_hour;
+	ret_timeinfo.tm_mday = timeinfo_utc->tm_mday;
+	ret_timeinfo.tm_mon = timeinfo_utc->tm_mon;
+	ret_timeinfo.tm_year = timeinfo_utc->tm_year;
+	ret_timeinfo.tm_isdst = timeinfo_utc->tm_isdst;
+	return mktime(&ret_timeinfo);
+}
+
 bool predict_decayed(const predict_orbital_elements_t *orbital_elements, predict_julian_date_t time)
 {
-	double satepoch;
+	struct tm julian_start_time;
+	time_t julian_start_day;
+	double satepoch, time_epochtime;
+
+	julian_start_time.tm_sec = 0;
+	julian_start_time.tm_min = 0;
+	julian_start_time.tm_hour = 0;
+	julian_start_time.tm_mday = 31;
+	julian_start_time.tm_mon = 11;
+	julian_start_time.tm_year = 1979-1900;
+	julian_start_time.tm_isdst = 0;
+	julian_start_day = mktime_utc(&julian_start_time);
+
 	satepoch=DayNum(1,0,orbital_elements->epoch_year)+orbital_elements->epoch_day;
 
+	time_epochtime = difftime(timestamp_from_julian(time), julian_start_day) / SECONDS_PER_DAY;
+
 	bool has_decayed = false;
-	if (satepoch + ((16.666666 - orbital_elements->mean_motion)/(10.0*fabs(orbital_elements->derivative_mean_motion))) < time)
+
+	if (satepoch + ((16.666666 - orbital_elements->mean_motion)/(10.0*fabs(orbital_elements->derivative_mean_motion))) < time_epochtime)
 	{
 		has_decayed = true;
 	}

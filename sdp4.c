@@ -18,7 +18,7 @@
  * \param deep_arg Fixed part of deep_arg
  * \copyright GPLv2+
  **/
-void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct _sdp4 *m, deep_arg_fixed_t *deep_arg);
+void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct predict_sdp4 *m, deep_arg_fixed_t *deep_arg);
 
 /**
  * Initialize the dynamic part of deep_arg.
@@ -27,9 +27,9 @@ void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct _sdp4 *m
  * \param deep_dyn Dynamic part of deep_arg
  * \copyright GPLv2+
  **/
-void deep_arg_dynamic_init(const struct _sdp4 *m, deep_arg_dynamic_t *deep_dyn);
+void deep_arg_dynamic_init(const struct predict_sdp4 *m, deep_arg_dynamic_t *deep_dyn);
 
-void sdp4_init(const predict_orbital_elements_t *tle, struct _sdp4 *m)
+void sdp4_init(const predict_orbital_elements_t *tle, struct predict_sdp4 *m)
 {
 	m->lunarTermsDone = 0;
 	m->resonanceFlag = 0;
@@ -116,7 +116,7 @@ void sdp4_init(const predict_orbital_elements_t *tle, struct _sdp4 *m)
 	sdp4_deep_initialize(tle, m, &(m->deep_arg));
 }
 
-void sdp4_predict(const struct _sdp4 *m, double tsince, struct model_output *output)
+void sdp4_predict(const struct predict_sdp4 *m, double tsince, struct model_output *output)
 {
 
 	int i;
@@ -303,7 +303,7 @@ double ThetaG(double epoch, deep_arg_fixed_t *deep_arg)
 	return ThetaG;
 }
 
-void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct _sdp4 *m, deep_arg_fixed_t *deep_arg)
+void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct predict_sdp4 *m, deep_arg_fixed_t *deep_arg)
 {
 	(void) tle;
 	
@@ -605,7 +605,7 @@ void sdp4_deep_initialize(const predict_orbital_elements_t *tle, struct _sdp4 *m
 	return;
 }
 
-void deep_arg_dynamic_init(const struct _sdp4 *m, deep_arg_dynamic_t *deep_dyn){
+void deep_arg_dynamic_init(const struct predict_sdp4 *m, deep_arg_dynamic_t *deep_dyn){
 	deep_dyn->savtsn=1E20;
 	deep_dyn->loopFlag = 0;
 	deep_dyn->epochRestartFlag = 0;
@@ -614,7 +614,7 @@ void deep_arg_dynamic_init(const struct _sdp4 *m, deep_arg_dynamic_t *deep_dyn){
 	deep_dyn->atime=0;
 }
 
-void sdp4_deep(const struct _sdp4 *m, int ientry, const deep_arg_fixed_t * deep_arg, deep_arg_dynamic_t *deep_dyn)
+void sdp4_deep(const struct predict_sdp4 *m, int ientry, const deep_arg_fixed_t * deep_arg, deep_arg_dynamic_t *deep_dyn)
 {
 	/* This function is used by SDP4 to add lunar and solar */
 	/* perturbation effects to deep-space orbit objects.    */

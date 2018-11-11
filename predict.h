@@ -72,6 +72,79 @@ typedef struct {
 } predict_orbital_elements_t;
 
 /**
+ * Parameters relevant for SGP4 (simplified general perturbations) orbital model.
+ **/
+struct predict_sgp4 {
+	
+	///Simple flag
+	int simpleFlag;
+
+	///Static variables from original SGP4() (time-independent, and might probably have physical meaningfulness)
+	double aodp, aycof, c1, c4, c5, cosio, d2, d3, d4, delmo,
+	omgcof, eta, omgdot, sinio, xnodp, sinmo, t2cof, t3cof, t4cof,
+	t5cof, x1mth2, x3thm1, x7thm1, xmcof, xmdot, xnodcf, xnodot, xlcof;
+
+	//tle fields copied (and converted) from predict_orbital_t. The fields above are TLE-dependent anyway, and interrelated with the values below.
+	double bstar;
+	double xincl;
+	double xnodeo;
+	double eo;
+	double omegao;
+	double xmo;
+	double xno;
+};
+
+/**
+ * Parameters for deep space perturbations
+ **/
+typedef struct	{
+	/* Used by dpinit part of Deep() */
+	double  eosq, sinio, cosio, betao, aodp, theta2,
+	sing, cosg, betao2, xmdot, omgdot, xnodot, xnodp;
+
+	/* Used by thetg and Deep() */
+	double  ds50;
+}  deep_arg_fixed_t;
+
+/**
+ * Parameters relevant for SDP4 (simplified deep space perturbations) orbital model.
+ **/
+struct predict_sdp4 {
+
+	///Lunar terms done?
+	int lunarTermsDone;
+	///Resonance flag:
+	int resonanceFlag;
+	///Synchronous flag:
+	int synchronousFlag;
+
+
+	///Static variables from SDP4():
+	double x3thm1, c1, x1mth2, c4, xnodcf, t2cof, xlcof,
+	aycof, x7thm1;
+	deep_arg_fixed_t deep_arg;
+
+	///Static variables from Deep():
+	double thgr, xnq, xqncl, omegaq, zmol, zmos, ee2, e3,
+	xi2, xl2, xl3, xl4, xgh2, xgh3, xgh4, xh2, xh3, sse, ssi, ssg, xi3,
+	se2, si2, sl2, sgh2, sh2, se3, si3, sl3, sgh3, sh3, sl4, sgh4, ssl,
+	ssh, d3210, d3222, d4410, d4422, d5220, d5232, d5421, d5433, del1,
+	del2, del3, fasx2, fasx4, fasx6, xlamo, xfact, stepp,
+	stepn, step2, preep, d2201, d2211,
+	zsingl, zcosgl, zsinhl, zcoshl, zsinil, zcosil;
+
+	//converted fields from predict_orbital_elements_t.
+	double xnodeo;
+	double omegao;
+	double xmo;
+	double xincl;
+	double eo;
+	double xno;
+	double bstar;
+	double epoch;
+};
+
+/**
  * Create predict_orbital_elements_t from TLE strings.
  *
  * \param tle_line_1 First line of NORAD two-line element set string
@@ -79,13 +152,7 @@ typedef struct {
  * \return Processed TLE parameters
  * \copyright GPLv2+
  **/
-bool predict_parse_tle(predict_orbital_elements_t *m, const char *tle_line_1, const char *tle_line_2);
-
-/**
- * Free memory allocated in orbital elements structure.
- * \param orbital_elements Orbit to free
- **/
-void predict_destroy_orbital_elements(predict_orbital_elements_t *orbital_elements);
+bool predict_parse_tle(predict_orbital_elements_t *m, const char *tle_line_1, const char *tle_line_2, struct predict_sgp4 *sgp4, struct predict_sdp4 *sdp4);
 
 /**
  * Predicted orbital values for satellite at a given time.

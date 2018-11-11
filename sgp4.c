@@ -3,7 +3,7 @@
 #include "defs.h"
 #include "unsorted.h"
 
-void sgp4_init(const predict_orbital_elements_t *orbital_elements, struct _sgp4 *m)
+void sgp4_init(const predict_orbital_elements_t *orbital_elements, struct predict_sgp4 *m)
 {
 	m->simpleFlag = 0;
 
@@ -117,7 +117,7 @@ void sgp4_init(const predict_orbital_elements_t *orbital_elements, struct _sgp4 
 	}
 }
 
-void sgp4_predict(const struct _sgp4 *m, double tsince, struct model_output *output)
+void sgp4_predict(const struct predict_sgp4 *m, double tsince, struct model_output *output)
 {
 	double cosuk, sinuk, rfdotk, vx, vy, vz, ux, uy, uz, xmy, xmx, cosnok,
 	sinnok, cosik, sinik, rdotk, xinck, xnodek, uk, rk, cos2u, sin2u,
