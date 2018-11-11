@@ -1,0 +1,22 @@
+## Travis CI Configuration file
+
+# Use barebones Travis image
+language: c
+
+# Only grab latest git commit (no need for history)
+git:
+  depth: 1
+
+# Use GCC 7
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-7
+
+# Command to run tests
+script:
+  - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
+  - cd example/ && make
+  - ./example

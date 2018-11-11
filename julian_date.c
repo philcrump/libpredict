@@ -1,6 +1,4 @@
-#include <stdint.h>
-
-#include "predict/predict.h"
+#include "predict.h"
 
 #define SECONDS_IN_HOUR 3600.0
 #define SECONDS_IN_DAY 86400.0
