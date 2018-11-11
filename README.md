@@ -1,4 +1,4 @@
-libpredict
+libpredict  [![Build Status](https://travis-ci.org/philcrump/libpredict.svg?branch=master)](https://travis-ci.org/philcrump/libpredict)
 ==========
 
 This is a fork of la1k's satellite orbit prediction library ( https://github.com/la1k/libpredict/ ).
