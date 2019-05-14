@@ -327,22 +327,6 @@ void predict_observe_orbit(const predict_observer_t *observer, const struct pred
 void predict_observe_moon(const predict_observer_t *observer, predict_julian_date_t time, struct predict_observation *obs);
 
 /**
- * Calculate right ascension of the moon.
- *
- * \param time Time
- * \return RA in radians
- **/
-double predict_moon_ra(predict_julian_date_t time);
-
-/**
- * Calculate declination of the moon.
- *
- * \param time Time
- * \return Declination in radians
- **/
-double predict_moon_declination(predict_julian_date_t time);
-
-/**
  * Calculate the greenwich hour angle (longitude) of the moon.
  *
  * \param time Time

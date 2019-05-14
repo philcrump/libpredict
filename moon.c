@@ -193,15 +193,7 @@ void predict_moon(predict_julian_date_t jul_time, struct moon *moon)
 	moon->teg = teg;
 }
 
-/**
- * Calculate RA and dec for the moon.
- *
- * \param time Time
- * \param ra Right ascension
- * \param dec Declination
- * \copyright GPLv2+
- **/
-void predict_moon_ra_dec(predict_julian_date_t jul_time, double *ra, double *dec)
+void predict_observe_moon(const predict_observer_t *observer, predict_julian_date_t jul_time, struct predict_observation *obs)
 {
 	struct moon moon;
 	predict_moon(jul_time, &moon);
@@ -213,20 +205,13 @@ void predict_moon_ra_dec(predict_julian_date_t jul_time, double *ra, double *dec
 	double z=(moon.jd-2415020.5)/365.2422;
 	double ob=23.452294-(0.46845*z+5.9e-07*z*z)/3600.0;
 	ob=ob*M_PI/180.0;
-	*dec=asin(sin(moon.b)*cos(ob)+cos(moon.b)*sin(ob)*sin(moon.lm));
-	*ra=acos(cos(moon.b)*cos(moon.lm)/cos(*dec));
+	double dec=asin(sin(moon.b)*cos(ob)+cos(moon.b)*sin(ob)*sin(moon.lm));
+	double ra=acos(cos(moon.b)*cos(moon.lm)/cos(dec));
 
 	if (moon.lm > M_PI)
-		*ra = 2*M_PI - *ra;
-}
-
-void predict_observe_moon(const predict_observer_t *observer, predict_julian_date_t jul_time, struct predict_observation *obs)
-{
-	struct moon moon;
-	predict_moon(jul_time, &moon);
-
-	double ra, dec;
-	predict_moon_ra_dec(jul_time, &ra, &dec);
+	{
+		ra = 2*M_PI - ra;
+	}
 
 	double n = observer->latitude;    /* North latitude of tracking station */
 	double e = observer->longitude;  /* East longitude of tracking station */
@@ -261,25 +246,27 @@ void predict_observe_moon(const predict_observer_t *observer, predict_julian_dat
 	obs->range_rate = moon_dv;
 }
 
-double predict_moon_ra(predict_julian_date_t jul_time)
-{
-	double ra, dec;
-	predict_moon_ra_dec(jul_time, &ra, &dec);
-	return ra;
-}
-
-double predict_moon_declination(predict_julian_date_t jul_time)
-{
-	double ra, dec;
-	predict_moon_ra_dec(jul_time, &ra, &dec);
-	return dec;
-}
-
 double predict_moon_gha(predict_julian_date_t jul_time)
 {
 	struct moon moon;
 	predict_moon(jul_time, &moon);
-	double moon_gha=moon.teg-predict_moon_ra(jul_time)*180.0/M_PI;
+
+	/* Semi-diameter calculation */
+	/* sem=10800.0*asin(0.272488*p*M_PI/180.0)/pi; */
+	/* Convert ecliptic coordinates to equatorial coordinates */
+
+	double z=(moon.jd-2415020.5)/365.2422;
+	double ob=23.452294-(0.46845*z+5.9e-07*z*z)/3600.0;
+	ob=ob*M_PI/180.0;
+	double dec=asin(sin(moon.b)*cos(ob)+cos(moon.b)*sin(ob)*sin(moon.lm));
+	double ra=acos(cos(moon.b)*cos(moon.lm)/cos(dec));
+
+	if (moon.lm > M_PI)
+	{
+		ra = 2*M_PI - ra;
+	}
+
+	double moon_gha=moon.teg-ra*180.0/M_PI;
 
 	if (moon_gha<0.0) moon_gha+=360;
 	return moon_gha*M_PI/180.0;
