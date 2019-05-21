@@ -194,6 +194,12 @@ struct predict_position {
 	double argument_of_perigee;
 };
 
+typedef struct {
+	char *name;
+	double right_ascension;
+	double declination;
+} predict_celestial_body_t;
+
 /**
  * Main prediction function. Predict satellite orbit at given time. 
  * \param orbital_elements Orbital elements
@@ -371,6 +377,35 @@ double predict_sun_declination(predict_julian_date_t time);
  * \copyright GPLv2+
  **/
 double predict_sun_gha(predict_julian_date_t time);
+
+/**
+ * Calculate the observed azimuth & elevation of a Right Ascension and Declination object input
+ * 
+ * \param observer Observer object
+ * \param time Time of observation 
+ * \param ra Right Ascension of observed object
+ * \param dec Declination of observed object
+ * \param obs Return object for calculated observation
+ **/
+void predict_observe_ra_dec(const predict_observer_t *observer, predict_julian_date_t time, double ra, double dec, struct predict_observation *obs);
+
+/**
+ * Search the built-in catalog for celestial bodies (eg. stars, supernovae)
+ * 
+ * \param search Search string
+ * \return Pointer to celestial body object if found, NULL if not found.
+ **/
+const predict_celestial_body_t *predict_celestial_bodies_search(char *search);
+
+/**
+ * Calculate the observed azimuth & elevation of a celestial object
+ * 
+ * \param observer Observer object
+ * \param time Time of observation 
+ * \param body Celestial body object
+ * \param obs Return object for calculated observation
+ **/
+void predict_observe_celestial(const predict_observer_t *observer, predict_julian_date_t time, const predict_celestial_body_t *body, struct predict_observation *obs);
 
 /** 
  * Find next acquisition of signal (AOS) of satellite (when the satellite rises above the horizon). Ignores previous AOS of current pass if the satellite is in range at the start time. 

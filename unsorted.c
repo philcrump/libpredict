@@ -339,3 +339,16 @@ double asin_(double arg)
 {
 	return asin(arg < -1.0 ? -1.0 : (arg > 1.0 ? 1.0 : arg));
 }
+
+double Sidereal_from_Julian(double jul_time)
+{
+	double t;
+
+	t = (jul_time-2451545.0)/36525.0;
+	t = 280.46061837+360.98564736629*(jul_time-2451545.0)+(0.000387933*t-t*t/38710000.0)*t;
+
+	t *= (2*M_PI)/360.0;
+
+	// Modulus 2*Pi
+	return FMod2p(t);
+}

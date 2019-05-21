@@ -58,6 +58,9 @@ int main(void)
   struct predict_observation sun_observation;
   struct predict_observation moon_observation;
 
+  const predict_celestial_body_t *taurus_a;
+  struct predict_observation taurus_a_observation;
+
   // Near-space (period <225 minutes)
   struct predict_sgp4 sgp;
 
@@ -81,7 +84,7 @@ int main(void)
   predict_create_observer(&obs, "Self", RADIANS_FROM_DEGREES(OBSERVER_LATITUDE), RADIANS_FROM_DEGREES(OBSERVER_LONGITUDE), OBSERVER_ALTITUDE);
   printf("Observer Position:        %+.4f°N, %+.4f°E, %+dm\n", OBSERVER_LATITUDE, OBSERVER_LONGITUDE, OBSERVER_ALTITUDE);
 
-  printf("== Planetary Bodies ==\n");
+  printf("== Celestial Bodies ==\n");
 
   predict_observe_sun(&obs, curr_time, &sun_observation);
   printf("Current Sun Observation:  AZ: %8.3f°, EL: %8.3f°\n",
@@ -93,6 +96,18 @@ int main(void)
   printf("Current Moon Observation: AZ: %8.3f°, EL: %8.3f°\n",
     DEGREES_FROM_RADIANS(moon_observation.azimuth),
     DEGREES_FROM_RADIANS(moon_observation.elevation)
+  );
+
+  taurus_a = predict_celestial_bodies_search("TAURUS A");
+  if(taurus_a == NULL)
+  {
+    fprintf(stderr, TXT_RED"Error finding Taurus-A in catalog!"TXT_NORM"\n");
+    exit(1);
+  }
+  predict_observe_celestial(&obs, curr_time, taurus_a, &taurus_a_observation);
+  printf("Current TAURUS-A Observation: AZ: %8.3f°, EL: %8.3f°\n",
+    DEGREES_FROM_RADIANS(taurus_a_observation.azimuth),
+    DEGREES_FROM_RADIANS(taurus_a_observation.elevation)
   );
 
   printf("== Spacecraft ==\n");

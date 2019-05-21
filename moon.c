@@ -6,21 +6,6 @@
 #include "sun.h"
 
 /**
- * This function reduces angles greater than two pi by subtracting two pi
- * from the angle
- *
- * \copyright GPLv2+
- **/
-double FixAngle(double x)
-{
-
-	while ( x > 2*M_PI )
-		x-=2*M_PI;
-
-	return x;
-}
-
-/**
  * This function is used in the FindMoon() function.
  *
  * \copyright GPLv2+
@@ -217,7 +202,7 @@ void predict_observe_moon(const predict_observer_t *observer, predict_julian_dat
 	double e = observer->longitude;  /* East longitude of tracking station */
 
 
-	double th = FixAngle(moon.teg*M_PI/180.0 + e);
+	double th = FMod2p(moon.teg*M_PI/180.0 + e);
 	double h=th-ra;
 
 	double az=atan2(sin(h),cos(h)*sin(n)-tan(dec)*cos(n))+M_PI;
@@ -227,7 +212,7 @@ void predict_observe_moon(const predict_observer_t *observer, predict_julian_dat
 	   from "Amateur Radio Software", by John Morris, GM4ANB,
 	   published by the RSGB in 1985. */
 
-	double mm=FixAngle(1.319238+jul_time*0.228027135);  /* mean moon position */
+	double mm=FMod2p(1.319238+jul_time*0.228027135);  /* mean moon position */
 	double t2=0.10976;
 	double t1=mm+t2*sin(mm);
 	double dv=0.01255*moon.dx*moon.dx*sin(t1)*(1.0+t2*cos(mm));

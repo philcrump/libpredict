@@ -194,4 +194,12 @@ double acos_(double arg);
 double asin_(double arg);
 
 
+/**
+ * Calculates Sidereal time (in radians) from Julian Time
+ *
+ * \param jul_time Julian Time
+ * \return Sidereal Time
+ **/
+double Sidereal_from_Julian(double jul_time);
+
 #endif

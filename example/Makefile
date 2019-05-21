@@ -13,6 +13,7 @@ LIBPREDICT_SRCS = $(LIBPREDICT_DIR)/julian_date.c \
 		$(LIBPREDICT_DIR)/sdp4.c \
 		$(LIBPREDICT_DIR)/sgp4.c \
 		$(LIBPREDICT_DIR)/sun.c \
+		$(LIBPREDICT_DIR)/celestial.c \
 		$(LIBPREDICT_DIR)/unsorted.c
 
 BIN = example
