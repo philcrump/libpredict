@@ -20,3 +20,5 @@ script:
   - sudo ln -s /usr/bin/gcc-7 /usr/local/bin/gcc
   - cd example/ && make
   - ./example
+  - cd ../test/ && make
+  - ./test
