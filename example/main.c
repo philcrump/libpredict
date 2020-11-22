@@ -20,9 +20,6 @@
 #define OBSERVER_LONGITUDE        -1.39
 #define OBSERVER_ALTITUDE         0
 
-#define RADIANS_FROM_DEGREES(x)   (x*(M_PI/180.0))
-#define DEGREES_FROM_RADIANS(x)   (x*(180.0/M_PI))
-
 uint64_t timestamp_ms(void)
 {
   struct timespec spec;
@@ -81,15 +78,15 @@ int main(void)
   timestamp_ms_toString(current_timestamp, sizeof(current_timestamp), timestamp_ms_from_julian(curr_time));
   printf("Time:                     %s\n", current_timestamp);
 
-  predict_create_observer(&obs, "Self", RADIANS_FROM_DEGREES(OBSERVER_LATITUDE), RADIANS_FROM_DEGREES(OBSERVER_LONGITUDE), OBSERVER_ALTITUDE);
+  predict_create_observer(&obs, "Self", PREDICT_DEG2RAD(OBSERVER_LATITUDE), PREDICT_DEG2RAD(OBSERVER_LONGITUDE), OBSERVER_ALTITUDE);
   printf("Observer Position:        %+.4f°N, %+.4f°E, %+dm\n", OBSERVER_LATITUDE, OBSERVER_LONGITUDE, OBSERVER_ALTITUDE);
 
   printf("== Celestial Bodies ==\n");
 
   predict_observe_sun(&obs, curr_time, &sun_observation);
   printf("Current Sun Observation:  AZ: %8.3f°, EL: %8.3f°\n",
-    DEGREES_FROM_RADIANS(sun_observation.azimuth),
-    DEGREES_FROM_RADIANS(sun_observation.elevation)
+    PREDICT_RAD2DEG(sun_observation.azimuth),
+    PREDICT_RAD2DEG(sun_observation.elevation)
   );
 
   bool sun_visible;
@@ -101,8 +98,8 @@ int main(void)
 
   predict_observe_moon(&obs, curr_time, &moon_observation);
   printf("Current Moon Observation: AZ: %8.3f°, EL: %8.3f°\n",
-    DEGREES_FROM_RADIANS(moon_observation.azimuth),
-    DEGREES_FROM_RADIANS(moon_observation.elevation)
+    PREDICT_RAD2DEG(moon_observation.azimuth),
+    PREDICT_RAD2DEG(moon_observation.elevation)
   );
 
   bool moon_visible;
@@ -120,8 +117,8 @@ int main(void)
   }
   predict_observe_celestial(&obs, curr_time, taurus_a, &taurus_a_observation);
   printf("Current TAURUS-A Observation: AZ: %8.3f°, EL: %8.3f°\n",
-    DEGREES_FROM_RADIANS(taurus_a_observation.azimuth),
-    DEGREES_FROM_RADIANS(taurus_a_observation.elevation)
+    PREDICT_RAD2DEG(taurus_a_observation.azimuth),
+    PREDICT_RAD2DEG(taurus_a_observation.elevation)
   );
 
   bool taurus_a_visible;
@@ -158,8 +155,8 @@ int main(void)
 
   predict_observe_orbit(&obs, &iss_orbit, &iss_observation);
   printf("Current ISS Observation:  AZ: %8.3f°, EL: %8.3f°\n",
-    DEGREES_FROM_RADIANS(iss_observation.azimuth),
-    DEGREES_FROM_RADIANS(iss_observation.elevation)
+    PREDICT_RAD2DEG(iss_observation.azimuth),
+    PREDICT_RAD2DEG(iss_observation.elevation)
   );
 
   bool iss_visible;
@@ -170,7 +167,7 @@ int main(void)
   );
 
 
-  if(predict_aos_happens(&iss_tle, RADIANS_FROM_DEGREES(OBSERVER_LATITUDE)))
+  if(predict_aos_happens(&iss_tle, PREDICT_DEG2RAD(OBSERVER_LATITUDE)))
   {
     char aos_timestamp[25];
     char los_timestamp[25];
@@ -183,21 +180,21 @@ int main(void)
     iss_next_aos = predict_next_aos(&obs, &iss_tle, curr_time);
     timestamp_ms_toString(aos_timestamp, sizeof(aos_timestamp), timestamp_ms_from_julian(iss_next_aos.time));
     printf("Next ISS AoS Azimuth:    %8.3f° at %s\n",
-      DEGREES_FROM_RADIANS(iss_next_aos.azimuth),
+      PREDICT_RAD2DEG(iss_next_aos.azimuth),
       aos_timestamp
     );
 
     iss_next_maxel = predict_at_max_elevation(&obs, &iss_tle, iss_next_aos.time);
     timestamp_ms_toString(maxel_timestamp, sizeof(maxel_timestamp), timestamp_ms_from_julian(iss_next_maxel.time));
     printf("      Max Elevation:     %8.3f° at %s\n",
-      DEGREES_FROM_RADIANS(iss_next_maxel.elevation),
+      PREDICT_RAD2DEG(iss_next_maxel.elevation),
       maxel_timestamp
     );
 
     iss_next_los = predict_next_los(&obs, &iss_tle, iss_next_aos.time);
     timestamp_ms_toString(los_timestamp, sizeof(los_timestamp), timestamp_ms_from_julian(iss_next_los.time));
     printf("         LoS Azimuth:    %8.3f° at %s\n",
-      DEGREES_FROM_RADIANS(iss_next_los.azimuth),
+      PREDICT_RAD2DEG(iss_next_los.azimuth),
       los_timestamp
     );
   }
