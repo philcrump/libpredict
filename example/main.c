@@ -92,10 +92,24 @@ int main(void)
     DEGREES_FROM_RADIANS(sun_observation.elevation)
   );
 
+  bool sun_visible;
+  double sun_refraction = predict_refraction_rf(&obs, sun_observation.elevation, &sun_visible);
+  printf("          RF refraction:  dEL: %+8.3f° (%s)\n",
+    PREDICT_RAD2DEG(sun_refraction),
+    sun_visible ? "visible" : "not visible"
+  );
+
   predict_observe_moon(&obs, curr_time, &moon_observation);
   printf("Current Moon Observation: AZ: %8.3f°, EL: %8.3f°\n",
     DEGREES_FROM_RADIANS(moon_observation.azimuth),
     DEGREES_FROM_RADIANS(moon_observation.elevation)
+  );
+
+  bool moon_visible;
+  double moon_refraction = predict_refraction_rf(&obs, moon_observation.elevation, &moon_visible);
+  printf("          RF refraction:  dEL: %+8.3f° (%s)\n",
+    PREDICT_RAD2DEG(moon_refraction),
+    moon_visible ? "visible" : "not visible"
   );
 
   taurus_a = predict_celestial_bodies_search("TAURUS A");
@@ -108,6 +122,13 @@ int main(void)
   printf("Current TAURUS-A Observation: AZ: %8.3f°, EL: %8.3f°\n",
     DEGREES_FROM_RADIANS(taurus_a_observation.azimuth),
     DEGREES_FROM_RADIANS(taurus_a_observation.elevation)
+  );
+
+  bool taurus_a_visible;
+  double taurus_a_refraction = predict_refraction_rf(&obs, taurus_a_observation.elevation, &taurus_a_visible);
+  printf("          RF refraction:  dEL: %+8.3f° (%s)\n",
+    PREDICT_RAD2DEG(taurus_a_refraction),
+    taurus_a_visible ? "visible" : "not visible"
   );
 
   printf("== Spacecraft ==\n");
@@ -140,6 +161,14 @@ int main(void)
     DEGREES_FROM_RADIANS(iss_observation.azimuth),
     DEGREES_FROM_RADIANS(iss_observation.elevation)
   );
+
+  bool iss_visible;
+  double iss_refraction = predict_refraction_rf(&obs, iss_observation.elevation, &iss_visible);
+  printf("          RF refraction:  dEL: %+8.3f° (%s)\n",
+    PREDICT_RAD2DEG(iss_refraction),
+    iss_visible ? "visible" : "not visible"
+  );
+
 
   if(predict_aos_happens(&iss_tle, RADIANS_FROM_DEGREES(OBSERVER_LATITUDE)))
   {
