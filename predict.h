@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define PREDICT_DEG2RAD(x)   (x*(M_PI/180.0))
+#define PREDICT_RAD2DEG(x)   (x*(180.0/M_PI))
+
 /**
  * The representation of time used by libpredict: The number of days since 31Dec79 00:00:00 UTC. 
  **/
