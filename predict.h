@@ -582,4 +582,26 @@ double predict_apparent_elevation_rate(double el, double el_rate);
  */
 double predict_apparent_elevation_rate_ext(double el, double el_rate, double pressure, double temp);
 
+/*!
+ * \brief Calculate RF refraction angle. ( ITU-R P.834-7 )
+ *
+ * \param observer Point of observation
+ * \param el True elevation angle (rad).
+ * \param visible Pointer to output boolean of if elevation is visible (model is not valid if not visible).
+ *
+ * \return RF Refraction angle (rad).
+ */
+double predict_refraction_rf(const predict_observer_t *observer, double el, bool *visible);
+
+/*!
+ * \brief Calculate RF-apparent elevation from true elevation. ( ITU-R P.834-7 )
+ *
+ * \param observer Point of observation
+ * \param el True elevation angle (rad).
+ * \param visible Pointer to output boolean of if elevation is visible (model is not valid and so not applied if not visible).
+ *
+ * \return RF-Apparent elevation (rad).
+ */
+double predict_apparent_elevation_rf(const predict_observer_t *observer, double el, bool *visible);
+
 #endif //_PREDICT_H_
